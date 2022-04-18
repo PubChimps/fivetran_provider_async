@@ -8,22 +8,23 @@ from airflow.hooks.base_hook import BaseHook
 
 from asgiref.sync import sync_to_async
 
+
 class FivetranHookAsync(FivetranHook):
-    api_user_agent = 'airflow_provider_fivetran_async/1.0.0'
-    
+    api_user_agent = "airflow_provider_fivetran_async/1.0.0"
+
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
     async def _do_api_call_async(self, endpoint_info, json=None):
         method, endpoint = endpoint_info
-        
+
         if not self.fivetran_conn:
-            self.fivetran_conn = await sync_to_async(self.get_connection)(self.fivetran_conn_id)
+            self.fivetran_conn = await sync_to_async(self.get_connection)(
+                self.fivetran_conn_id
+            )
         auth = (self.fivetran_conn.login, self.fivetran_conn.password)
         url = f"{self.api_protocol}://{self.api_host}/{endpoint}"
-        headers = {
-            "User-Agent": self.api_user_agent
-        }
+        headers = {"User-Agent": self.api_user_agent}
 
         async with aiohttp.ClientSession() as session:
             if method == "GET":
@@ -58,11 +59,11 @@ class FivetranHookAsync(FivetranHook):
                 if attempt_num == self.retry_limit:
                     raise AirflowException(
                         f"API requests to Fivetran failed {self.retry_limit} times."
-                        " Giving up.")
-               
+                        " Giving up."
+                    )
+
                 attempt_num += 1
                 await asyncio.sleep(self.retry_delay)
-
 
     async def get_connector_async(self, connector_id):
         if connector_id == "":
@@ -70,14 +71,12 @@ class FivetranHookAsync(FivetranHook):
         endpoint = self.api_path_connectors + connector_id
         resp = await self._do_api_call_async(("GET", endpoint))
         return resp["data"]
-  
+
     async def get_sync_status_async(self, connector_id, previous_completed_at):
         connector_details = await self.get_connector_async(connector_id)
         succeeded_at = self._parse_timestamp(connector_details["succeeded_at"])
         failed_at = self._parse_timestamp(connector_details["failed_at"])
-        current_completed_at = (
-            succeeded_at if succeeded_at > failed_at else failed_at
-        )
+        current_completed_at = succeeded_at if succeeded_at > failed_at else failed_at
 
         # The only way to tell if a sync failed is to check if its latest
         # failed_at value is greater than then last known "sync completed at" value.
@@ -96,8 +95,10 @@ class FivetranHookAsync(FivetranHook):
         # Check if sync started by FivetranOperator has finished
         # indicated by new 'succeeded_at' timestamp
         if current_completed_at > previous_completed_at:
-            self.log.info('Connector "{}": succeeded_at: {}'.format(
-                connector_id, succeeded_at.to_iso8601_string())
+            self.log.info(
+                'Connector "{}": succeeded_at: {}'.format(
+                    connector_id, succeeded_at.to_iso8601_string()
+                )
             )
             return True
         else:

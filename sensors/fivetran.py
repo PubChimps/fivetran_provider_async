@@ -7,7 +7,6 @@ from fivetran_provider.sensor.fivetran import FivetranSensor
 from fivetran_provider_async.hooks.fivetran import FivetranHookAsync
 from fivetran_provider_async.triggers.fivetran import FivetranSensorTrigger
 
-
 class FivetranSensorAsync(FivetranSensor):
     def __init__(
         self,
@@ -30,7 +29,9 @@ class FivetranSensorAsync(FivetranSensor):
             method_name="execute_complete",
         )
 
-    def execute_complete(self, context: "Context", event: Optional[Dict[Any, Any]] = None) -> None:
+    def execute_complete(
+        self, context: "Context", event: Optional[Dict[Any, Any]] = None
+    ) -> None:
         """
         Callback for when the trigger fires - returns immediately.
         Relies on trigger to throw an exception, otherwise it assumes execution was
@@ -43,7 +44,9 @@ class FivetranSensorAsync(FivetranSensor):
             if "status" in event and event["status"] == "success":
                 self.log.info("%s completed successfully.", self.task_id)
                 self.log.info(
-                    "Fivetran connector %s finished syncing at  %s", self.connector_id, self.previous_completed_at
+                    "Fivetran connector %s finished syncing at  %s",
+                    self.connector_id,
+                    self.previous_completed_at,
                 )
                 return None
         self.log.info("%s completed successfully.", self.task_id)
