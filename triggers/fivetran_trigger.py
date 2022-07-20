@@ -16,6 +16,9 @@ class FivetranSensorTrigger(BaseTrigger):
     :param fiventran_conn_id: Reference to Fivetran connection id
     :param previous_completed_at: The last time the connector ran, collected on Sensor
         initialization.
+    :param xcom: If used, FivetranSensor receives timestamp of previously
+        completed sync from FivetranOperator via XCOM
+    :type xcom: str
     """
 
     def __init__(
@@ -25,6 +28,7 @@ class FivetranSensorTrigger(BaseTrigger):
         connector_id: str,
         fivetran_conn_id: str,
         previous_completed_at: pendulum.datetime.DateTime,
+        xcom: str = "",
     ):
         super().__init__()
         self.task_id = task_id
@@ -32,6 +36,7 @@ class FivetranSensorTrigger(BaseTrigger):
         self.connector_id = connector_id
         self.fivetran_conn_id = fivetran_conn_id
         self.previous_completed_at = previous_completed_at
+        self.xcom = xcom
 
     def serialize(self) -> Tuple[str, Dict[str, Any]]:
         """Serializes FivetranSensorTrigger arguments and classpath."""

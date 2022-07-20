@@ -44,6 +44,7 @@ class FivetranSensorAsync(FivetranSensor):
         poke_interval: int = 60,
         fivetran_retry_limit: int = 3,
         fivetran_retry_delay: int = 1,
+        xcom: str = "",
         **kwargs: Any,
     ):
         super().__init__(**kwargs)

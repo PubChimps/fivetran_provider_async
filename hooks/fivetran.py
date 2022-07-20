@@ -145,10 +145,15 @@ class FivetranHookAsync(FivetranHook):
             page in the Fivetran user interface.
         :type connector_id: str
         """
-        connector_details = await self.get_connector_async(connector_id)
-        succeeded_at = self._parse_timestamp(connector_details["succeeded_at"])
-        failed_at = self._parse_timestamp(connector_details["failed_at"])
-        return succeeded_at if succeeded_at > failed_at else failed_at
+        if xcom:
+            last_sync = self._parse_timestamp(xcom)
+
+        else:
+            connector_details = await self.get_connector_async(connector_id)
+            succeeded_at = self._parse_timestamp(connector_details["succeeded_at"])
+            failed_at = self._parse_timestamp(connector_details["failed_at"])
+            last_sync = succeeded_at if succeeded_at > failed_at else failed_at
+        return last_sync
 
 
 def _retryable_error_async(exception: ClientResponseError) -> bool:
